@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Web OS Boot</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: lime;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+    }
+    #bootScreen {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      animation: fadeOut 2s ease-out forwards;
+      animation-delay: 3s;
+    }
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        visibility: hidden;
+      }
+    }
+    #terminal {
+      display: none;
+      padding: 20px;
+    }
+    .output {
+      margin: 10px 0;
+    }
+    input {
+      background: black;
+      color: lime;
+      border: none;
+      font-family: inherit;
+      font-size: 16px;
+      outline: none;
+      width: 90%;
+    }
+  </style>
+</head>
+<body>
+  <div id="bootScreen">
+    <h1>Booting Web OS...</h1>
+  </div>
+
+  <div id="terminal">
+    <div id="outputArea"></div>
+    <input id="commandInput" type="text" placeholder="Type your command here...">
+  </div>
+
+  <script>
+    // Show terminal after boot
+    setTimeout(() => {
+      document.getElementById('bootScreen').style.display = 'none';
+      document.getElementById('terminal').style.display = 'block';
+      document.getElementById('commandInput').focus();
+    }, 5000);
+
+    const input = document.getElementById("commandInput");
+    const outputArea = document.getElementById("outputArea");
+
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        const command = input.value.trim();
+        const output = interpret(command);
+        outputArea.innerHTML += `<div class="output">> ${command}<br>${output}</div>`;
+        input.value = "";
+        outputArea.scrollTop = outputArea.scrollHeight;
+      }
+    });
+
+    function interpret(cmd) {
+      const clean = cmd.toLowerCase().trim();
+
+      // Print hello
+      if (clean.includes("print") && clean.includes("hello")) {
+        return "hello";
+      }
+
+      // Say or greet
+      if (clean.includes("say hello") || clean.includes("greet")) {
+        return "Hi there!";
+      }
+
+      // Math evaluation
+      if (clean.match(/[\d\+\-\*\/\%\.\(\)]+/)) {
+        try {
+          const expr = clean.match(/[\d\+\-\*\/\%\.\(\)\s]+/g).join("");
+          const result = eval(expr);
+          return `Answer: ${result}`;
+        } catch {
+          return "Sorry, couldn't calculate.";
+        }
+      }
+
+      // Word problems (simple pattern recognition)
+      if (clean.includes("apple") && clean.includes("eat")) {
+        const match = clean.match(/(\d+)[^\d]+eat[^\d]+(\d+)/);
+        if (match) {
+          const have = parseInt(match[1]);
+          const eat = parseInt(match[2]);
+          return `Answer: ${have - eat} apples left`;
+        }
+      }
+
+      if (clean.includes("is") && clean.includes("greater")) {
+        const match = clean.match(/is (\d+) greater than (\d+)/);
+        if (match) {
+          const a = parseInt(match[1]);
+          const b = parseInt(match[2]);
+          return a > b ? "Yes, it is." : "No, it isn't.";
+        }
+      }
+
+      if (clean.includes("how many") && clean.includes("left")) {
+        const match = clean.match(/(\d+)[^\d]+and[^\d]+(\d+)/);
+        if (match) {
+          const a = parseInt(match[1]);
+          const b = parseInt(match[2]);
+          return `Answer: ${a - b}`;
+        }
+      }
+
+      return "Unknown command. Try math, print hello, or a word problem.";
+    }
+  </script>
+</body>
+</html>
